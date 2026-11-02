@@ -182,7 +182,7 @@ GameBoard* gameBoardNew() {
     for (int i = 0; i < GRID_ROWS; i++) {
         RowNode* row = rowNew();
         if (row == NULL) {
-            free(board);    // Fallo un malloc: gameBoardDelete libera lo que ya se reservo (filas + board).
+            free(board);    // Fallo un malloc: free libera lo que ya se reservo (filas + board).
             return NULL;
         }
         row->next = board->first_row;  // 1) la fila nueva apunta a la que era la primera
