@@ -263,7 +263,7 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
     }
     int cleared = 0;
     int index = 0;                // numero de fila (para ubicar las particulas en pantalla)
-    RowNode* prev = NULL;         // nodo anterior al actual (NULL si el actual es first_row)
+    RowNode* prev = NULL;         // nodo anterior al actual (NULL si el actual es first_row).
     RowNode* curr = board->first_row;
  
     while (curr != NULL) {
