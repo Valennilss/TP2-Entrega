@@ -293,7 +293,7 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
             prev = curr;
             curr = curr->next;
         }
-        index++;                      // actualiza la posicion d ela fila eliminada
+        index++;                      // actualiza la posicion de la fila eliminada
     }
  
     // Las filas nuevas se insertan DESPUES del recorrido. Si se insertaran durante el
