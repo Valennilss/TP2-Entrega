@@ -78,6 +78,7 @@ GameBoard* game_board = NULL;
 
 // ========= EJERCICIO 1: STRINGS (NO USAR string.h) =========
 
+// Funcion auxiliar
 int len(char* s) {
     int cantidad = 0;
     for (int i = 0; s[i] != '\0'; i++) {
@@ -90,7 +91,10 @@ char* strDuplicate(char* src) {
     // TODO: Contar los caracteres de src, reservar con malloc (no olvidar el '\0'),
     //       copiar todo y devolver el puntero nuevo.
     int longitud = len(src);
-    char* duplicado = (char*) malloc((longitud + 1) * sizeof(char));
+    char* duplicado = (char*) malloc((longitud + 1) * sizeof(char));    // Pedimos memoria para copiar la palabra en otra direccion de memoria
+    if (duplicado == NULL) {
+        return NULL;
+    }
     for (int i = 0; i <= longitud; i++) {
         duplicado[i] = src[i];
     }
@@ -126,7 +130,7 @@ char* strConcatenate(char* src1, char* src2) {
     int longitud1 = len(src1);
     int longitud2 = len(src2);
     
-    char* concatenado = (char*) malloc((longitud1 + longitud2 + 1) * sizeof(char));
+    char* concatenado = (char*) malloc((longitud1 + longitud2 + 1) * sizeof(char));     // Pedimos memoria para concatenarlos en otra direccion de memoria
     
     for (int i = 0; i < longitud1; i++) {
         concatenado[i] = src1[i];
@@ -144,15 +148,18 @@ char* strConcatenate(char* src1, char* src2) {
 
 // ========= EJERCICIO 2: FUNCIONES A IMPLEMENTAR (EL TP) =========
 
+void gameBoardDelete(GameBoard* board);
 // Funcion auxiliar
 RowNode* rowNew() {
     RowNode* row = malloc(sizeof(RowNode));         // Pido memoria para crear las filas. Por cada nodo hago malloc y se inicializan todas las celdas.
-    if (row == NULL){                               // Escribimos next=NULL porque malloc devuelve memoria con basura.
-        return NULL;} 
+    if (row == NULL){                               
+        return NULL;                                
+    } 
     for (int c = 0; c < GRID_COLS; c++) {
         row->cells[c] = 0;
-        row->next = NULL;
-    } return row;
+    } 
+    row->next = NULL;                               // Escribimos next = NULL porque malloc devuelve memoria con basura.
+    return row;
 }
 
 GameBoard* gameBoardNew() {
@@ -182,7 +189,7 @@ GameBoard* gameBoardNew() {
     for (int i = 0; i < GRID_ROWS; i++) {
         RowNode* row = rowNew();
         if (row == NULL) {
-            free(board);    // Fallo un malloc: free libera lo que ya se reservo (filas + board).
+            gameBoardDelete(board);    // Fallo un malloc: gameBoardDelete libera lo que ya se reservo (filas + board).
             return NULL;
         }
         row->next = board->first_row;  // 1) la fila nueva apunta a la que era la primera
@@ -197,9 +204,9 @@ void gameBoardDelete(GameBoard* board) {
     // TODO: Recorrer y liberar todos los PieceQueueNode.
     // TODO: Recorrer y liberar todos los ParticleNode.
     // TODO: Finalmente, liberar la estructura GameBoard.
-     if (board == NULL){
+    if (board == NULL){
         return; 
-     } 
+    } 
  
     // En los tres recorridos se guarda next ANTES de hacer free: despues del free
     // el nodo ya no se puede leer.
@@ -263,7 +270,7 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
     }
     int cleared = 0;
     int index = 0;                // numero de fila (para ubicar las particulas en pantalla)
-    RowNode* prev = NULL;         // nodo anterior al actual (NULL si el actual es first_row).
+    RowNode* prev = NULL;         // nodo anterior al actual (NULL si el actual es first_row)
     RowNode* curr = board->first_row;
  
     while (curr != NULL) {
@@ -282,9 +289,9 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
             // Desenlazar: el anterior (o first_row si no hay anterior) salta al siguiente.
             RowNode* to_delete = curr;
             if (prev == NULL){
-                 board->first_row = curr->next;
+                board->first_row = curr->next;
             } else {
-                 prev->next = curr->next;
+                prev->next = curr->next;
             }
             curr = curr->next;
             free(to_delete);
@@ -303,8 +310,8 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
     for (int i = 0; i < cleared; i++) {
         RowNode* row = rowNew();
         if (row == NULL) {
-            break;
-        }   // sin memoria: no hay nada mas razonable que hacer
+            return cleared;     // sin memoria
+        }
         row->next = board->first_row;
         board->first_row = row;
     }
@@ -337,7 +344,7 @@ int gameBoardDequeuePiece(GameBoard* board, int* out_type) {
     // TODO: Extraer el primer nodo (queue_head).
     // TODO: Guardar el type en la variable out_type, liberar el nodo y actualizar el head.
     if (board == NULL || board->queue_head == NULL) {
-        return 0;           // La cola esta vacia
+        return 0;                     // La cola esta vacia
     }
     PieceQueueNode* node = board->queue_head;
     *out_type = node->type;           // Guardo el type en out_type
@@ -534,7 +541,9 @@ void testsTablero() {
     // --- Cola: 5 push y 6 pop ---
     printf("-- Cola --\n");
     int tipos[5] = {3, 1, 4, 1, 5};
-    for (int i = 0; i < 5; i++) gameBoardEnqueuePiece(b, tipos[i]);
+    for (int i = 0; i < 5; i++) {
+        gameBoardEnqueuePiece(b, tipos[i]);
+    }
     int v = -99;
     for (int i = 0; i < 5; i++) {
         int ok = gameBoardDequeuePiece(b, &v);
@@ -553,14 +562,22 @@ void testsTablero() {
     // --- Una linea: fila 19 ---
     printf("-- Una linea (fila 19) --\n");
     RowNode* fila = getRowAt(b, 19);
-    for (int c = 0; c < GRID_COLS; c++) fila->cells[c] = 1;
+    for (int c = 0; c < GRID_COLS; c++) {
+        fila->cells[c] = 1;
+    }
     RowNode* vieja_cima = b->first_row;
     int n = gameBoardCheckAndClearLines(b);
 
     int filas = 0;
-    for (RowNode* r = b->first_row; r != NULL; r = r->next) filas++;
+    for (RowNode* r = b->first_row; r != NULL; r = r->next) {
+        filas++;
+    }
     int vacia = 1;
-    for (int c = 0; c < GRID_COLS; c++) if (b->first_row->cells[c] != 0) vacia = 0;
+    for (int c = 0; c < GRID_COLS; c++) {
+        if (b->first_row->cells[c] != 0) {
+            vacia = 0;
+        }
+    }
     printf("lineas eliminadas      esperado: 1  obtenido: %d\n", n);
     printf("first_row es nueva     esperado: 1  obtenido: %d\n", b->first_row != vieja_cima);
     printf("first_row vacia        esperado: 1  obtenido: %d\n", vacia);
@@ -570,15 +587,23 @@ void testsTablero() {
     // --- Dos lineas: filas 0 y 1 ---
     printf("-- Dos lineas (filas 0 y 1) --\n");
     b = gameBoardNew();
-    if (b == NULL) return;
+    if (b == NULL) {
+        return;
+    }
     fila = getRowAt(b, 0);
-    for (int c = 0; c < GRID_COLS; c++) fila->cells[c] = 1;
+    for (int c = 0; c < GRID_COLS; c++) {
+        fila->cells[c] = 1;
+    }
     fila = getRowAt(b, 1);
-    for (int c = 0; c < GRID_COLS; c++) fila->cells[c] = 1;
+    for (int c = 0; c < GRID_COLS; c++) {
+        fila->cells[c] = 1;
+    }
     n = gameBoardCheckAndClearLines(b);
 
     filas = 0;
-    for (RowNode* r = b->first_row; r != NULL; r = r->next) filas++;
+    for (RowNode* r = b->first_row; r != NULL; r = r->next) {
+        filas++;
+    }
     printf("lineas eliminadas      esperado: 2  obtenido: %d\n", n);
     printf("filas en la lista      esperado: %d obtenido: %d\n", GRID_ROWS, filas);
     gameBoardDelete(b);
